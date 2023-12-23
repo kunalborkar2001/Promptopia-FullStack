@@ -20,14 +20,12 @@ const handler = NextAuth({
     callbacks : {
         
         async session({ session }) {
-            const sessionUser = await User.fingOne({
-                email: session.user.email
-            })
-    
-            session.user.id = sessionUser._id_toString();
-    
-            return session 
-        },
+            // store the user id from MongoDB to session
+            const sessionUser = await User.findOne({ email: session.user.email });
+            session.user.id = sessionUser._id.toString();
+      
+            return session;
+          },
         async signIn({ profile }) {
             try {
                 await connectToDb()
@@ -40,7 +38,7 @@ const handler = NextAuth({
     
                 if(!userExists) {
                     await User.create({
-                        email : profile.name,
+                        email : profile.email,
                         username : profile.name.replace(" ", "").toLowerCase(),
                         image: profile.picture
                     })
